@@ -3,251 +3,182 @@ import { TaskCompletionModal } from './components/TaskCompletionModal';
 import { SettingsModal } from './components/SettingsModal';
 import { ProfileModal } from './components/ProfileModal';
 import { Sidebar } from './components/Sidebar';
-import { useState } from 'react';
-import { Plus, Loader2 } from 'lucide-react';
+import { MobileSidebar } from './components/MobileSidebar';
+import { useState, useEffect } from 'react';
+import { Loader2, Menu, Sparkles } from 'lucide-react';
 import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext';
 import { useTasks } from './hooks/useTasks';
 import { Auth } from './components/Auth';
-import { Header } from './components/Header';
-import { TabNavigation } from './components/TabNavigation';
-import { TaskInputModal } from './components/TaskInputModal';
-import { SearchAndSort } from './components/SearchAndSort';
-import { TaskList } from './components/TaskList';
-import { Stats } from './components/Stats';
-import { motion } from 'framer-motion';
+import { Background } from './components/Background';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { TaskPage } from './components/TaskPage';
+import { AirdropList } from './components/Airdrops/AirdropList';
+import { AirdropDetailsWrapper } from './components/Airdrops/AirdropDetailsWrapper';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function AppContent() {
   const { theme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth(); 
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  
+  const taskData = useTasks();
   const {
-    // State
-    tasks,
     activeTab,
-    newTask,
-    newTaskType,
-    newTaskStatus,
-    newTaskLink,
-    newTaskWebsite,
-    newTaskTwitter,
-    newTaskDiscord,
-    newTaskTelegram,
-    newTaskDescription,
-    showTaskInput,
-    showSettingsModal,
-    showDeleteModal,
-    showConfirmCompleteModal,
-    editingTask,
-    editingTaskData,
-    timeUntilReset,
-    customResetTime,
-    searchQuery,
-    sortOption,
-    taskToConfirmComplete,
-    
-    // Computed values
-    dailyTasks,
-    noteTasks,
-    waitlistTasks,
-    testnetTasks,
-    dailyCompletionRate,
-    noteCompletionRate,
-    waitlistCompletionRate,
-    testnetCompletionRate,
-    dailyStreak,
-    noteStreak,
-    waitlistStreak,
-    testnetStreak,
-    
-    // Actions
     setActiveTab,
-    setNewTask,
-    setNewTaskType,
-    setNewTaskStatus,
-    setNewTaskLink,
-    setNewTaskWebsite,
-    setNewTaskTwitter,
-    setNewTaskDiscord,
-    setNewTaskTelegram,
-    setNewTaskDescription,
-    setShowTaskInput,
-    setShowDeleteModal,
+    showSettingsModal,
     setShowSettingsModal,
-    setEditingTaskData,
-    setSearchQuery,
-    setSortOption,
-    resetDailyTasks,
     saveResetTime,
+    customResetTime,
     exportTasksData,
     importTasksData,
-    addTask,
-    toggleTask,
-    deleteTask,
-    confirmDelete,
-    startEditing,
-    saveEdit,
-    cancelEdit,
-    requestConfirmComplete,
-    confirmCompleteTask,
-    cancelConfirmComplete
-  } = useTasks();
+    tasks
+  } = taskData;
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/airdrop2026')) {
+      if (activeTab !== 'airdrop') setActiveTab('airdrop');
+    } else if (path === '/dailytasks') {
+      if (activeTab !== 'daily') setActiveTab('daily');
+    } else if (path === '/notes') {
+      if (activeTab !== 'note') setActiveTab('note');
+    } else if (path === '/waitlist') {
+      if (activeTab !== 'waitlist') setActiveTab('waitlist');
+    } else if (path === '/testnet') {
+      if (activeTab !== 'testnet') setActiveTab('testnet');
+    }
+  }, [location, setActiveTab, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-gray-900 dark:to-gray-950 transition-colors duration-200">
-      {/* Sidebar for Desktop */}
-      <Sidebar 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onOpenSettings={() => setShowSettingsModal(true)}
-        onOpenProfile={() => setShowProfileModal(true)}
-        dailyCount={dailyTasks.length}
-        noteCount={noteTasks.length}
-        waitlistCount={waitlistTasks.length}
-        testnetCount={testnetTasks.length}
-      />
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-200">
+      <Background />
+      <div className="relative z-10">
+        
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-800 bg-[#1A1B1E]/80 backdrop-blur-sm sticky top-0 z-40">
+           <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-[#00E272]/20 rounded-lg flex items-center justify-center border border-[#00E272]/30">
+                <Sparkles className="w-4 h-4 text-[#00E272]" />
+              </div>
+              <span className="font-bold text-white">Airdrop Tracker</span>
+           </div>
+           <button 
+             onClick={() => setIsMobileSidebarOpen(true)}
+             className="p-2 text-gray-400 hover:text-white"
+           >
+             <Menu className="w-6 h-6" />
+           </button>
+        </div>
 
-      {/* Main Content Area - Responsive Margin */}
-      <div className="md:ml-64 min-h-screen transition-all duration-300">
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
-          
-          {/* Mobile Header - Hidden on Desktop */}
-          <div className="md:hidden">
-            <Header 
-              onOpenSettings={() => setShowSettingsModal(true)}
-              onOpenProfile={() => setShowProfileModal(true)}
-              dailyCompletionRate={dailyCompletionRate}
-              dailyStreak={dailyStreak}
-              timeUntilReset={timeUntilReset}
-            />
-            
-            <TabNavigation
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              dailyCount={dailyTasks.length}
-              noteCount={noteTasks.length}
-              waitlistCount={waitlistTasks.length}
-              testnetCount={testnetTasks.length}
-            />
-          </div>
-          
-          {/* Stats - Always visible now, grid adjusts automatically */}
-          <div className="mb-8">
-            <Stats
-              activeTab={activeTab}
-              dailyCompletionRate={dailyCompletionRate}
-              noteCompletionRate={noteCompletionRate}
-              waitlistCompletionRate={waitlistCompletionRate}
-              testnetCompletionRate={testnetCompletionRate}
-              dailyStreak={dailyStreak}
-              noteStreak={noteStreak}
-              waitlistStreak={waitlistStreak}
-              testnetStreak={testnetStreak}
-              timeUntilReset={timeUntilReset}
-            />
-          </div>
-          
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowTaskInput(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              Add New Task
-            </motion.button>
+        {/* Sidebar for Desktop */}
+        <Sidebar 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
+          dailyCount={taskData.dailyTasks.length}
+          noteCount={taskData.noteTasks.length}
+          waitlistCount={taskData.waitlistTasks.length}
+          testnetCount={taskData.testnetTasks.length}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
 
-            <div className="w-full md:w-auto">
-              <SearchAndSort
-                searchQuery={searchQuery}
-                sortOption={sortOption}
-                onSearchChange={setSearchQuery}
-                onSortChange={setSortOption}
-              />
-            </div>
-          </div>
-          
-          <TaskList
-            tasks={tasks}
-            activeTab={activeTab}
-            editingTask={editingTask}
-            editingTaskData={editingTaskData}
-            onToggleTask={toggleTask}
-            onDeleteTask={deleteTask}
-            onStartEditing={startEditing}
-            onSaveEdit={saveEdit}
-            onCancelEdit={cancelEdit}
-            onEditingTaskDataChange={setEditingTaskData}
-            onRequestConfirmComplete={requestConfirmComplete}
-          />
-          
-          <TaskInputModal
-            isOpen={showTaskInput}
-            onClose={() => setShowTaskInput(false)}
-            newTask={newTask}
-            newTaskType={newTaskType}
-            newTaskStatus={newTaskStatus}
-            newTaskLink={newTaskLink}
-            newTaskWebsite={newTaskWebsite}
-            newTaskTwitter={newTaskTwitter}
-            newTaskDiscord={newTaskDiscord}
-            newTaskTelegram={newTaskTelegram}
-            newTaskDescription={newTaskDescription}
-            onTaskChange={setNewTask}
-            onTaskTypeChange={setNewTaskType}
-            onTaskStatusChange={setNewTaskStatus}
-            onTaskLinkChange={setNewTaskLink}
-            onTaskWebsiteChange={setNewTaskWebsite}
-            onTaskTwitterChange={setNewTaskTwitter}
-            onTaskDiscordChange={setNewTaskDiscord}
-            onTaskTelegramChange={setNewTaskTelegram}
-            onTaskDescriptionChange={setNewTaskDescription}
-            onAddTask={addTask}
-          />
-          
-          <SettingsModal
-            isOpen={showSettingsModal}
-            onClose={() => setShowSettingsModal(false)}
-            theme={theme}
-            currentResetHour={customResetTime.hour}
-            currentResetMinute={customResetTime.minute}
-            onSaveResetTime={saveResetTime}
-            onExportData={exportTasksData}
-            onImportData={importTasksData}
-          />
+        {/* Mobile Sidebar Drawer */}
+        <MobileSidebar
+          isOpen={isMobileSidebarOpen}
+          onClose={() => setIsMobileSidebarOpen(false)}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
+          dailyCount={taskData.dailyTasks.length}
+          noteCount={taskData.noteTasks.length}
+          waitlistCount={taskData.waitlistTasks.length}
+          testnetCount={taskData.testnetTasks.length}
+        />
 
-          <ProfileModal
-            isOpen={showProfileModal}
-            onClose={() => setShowProfileModal(false)}
-            tasks={tasks}
-          />
-          
-          <ConfirmationModal
-            isOpen={showDeleteModal}
-            title="Delete Task"
-            message="Are you sure you want to delete this task? This action cannot be undone."
-            confirmText="Delete"
-            cancelText="Cancel"
-            onConfirm={confirmDelete}
-            onCancel={() => setShowDeleteModal(false)}
-            variant="danger"
-          />
-          
-          <TaskCompletionModal
-            isOpen={showConfirmCompleteModal}
-            task={taskToConfirmComplete}
-            onConfirm={confirmCompleteTask}
-            onCancel={cancelConfirmComplete}
-          />
+        <div className={`min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+           <Routes>
+              <Route path="/" element={<Navigate to="/airdrop2026" replace />} />
+              
+              <Route path="/dailytasks" element={
+                <ProtectedRoute>
+                  <TaskPage 
+                    taskData={taskData} 
+                    activeTab="daily"
+                    onOpenSettings={() => setShowSettingsModal(true)}
+                    onOpenProfile={() => setShowProfileModal(true)}
+                  />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/notes" element={
+                <ProtectedRoute>
+                  <TaskPage 
+                    taskData={taskData} 
+                    activeTab="note"
+                    onOpenSettings={() => setShowSettingsModal(true)}
+                    onOpenProfile={() => setShowProfileModal(true)}
+                  />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/waitlist" element={
+                <ProtectedRoute>
+                  <TaskPage 
+                    taskData={taskData} 
+                    activeTab="waitlist"
+                    onOpenSettings={() => setShowSettingsModal(true)}
+                    onOpenProfile={() => setShowProfileModal(true)}
+                  />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/testnet" element={
+                <ProtectedRoute>
+                  <TaskPage 
+                    taskData={taskData} 
+                    activeTab="testnet"
+                    onOpenSettings={() => setShowSettingsModal(true)}
+                    onOpenProfile={() => setShowProfileModal(true)}
+                  />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/airdrop2026" element={<AirdropList />} />
+              <Route path="/airdrop2026/:id" element={<AirdropDetailsWrapper />} />
+           </Routes>
         </div>
       </div>
+
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        theme={theme}
+        currentResetHour={customResetTime.hour}
+        currentResetMinute={customResetTime.minute}
+        onSaveResetTime={saveResetTime}
+        onExportData={exportTasksData}
+        onImportData={importTasksData}
+      />
+
+      <ProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        tasks={tasks}
+      />
     </div>
   );
 }
 
 function App() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -257,10 +188,7 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <Auth />;
-  }
-
+  // Removed the global user check to allow public access
   return <AppContent />;
 }
 

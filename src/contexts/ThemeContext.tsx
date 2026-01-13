@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'dark'; // Enforce dark theme
 
 interface ThemeContextType {
   theme: Theme;
@@ -23,55 +23,26 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Check localStorage first
-    const savedTheme = localStorage.getItem('task-tracker-theme') as Theme;
-    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      return savedTheme;
-    }
-    
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
-    return 'light';
-  });
+  // Always default to dark
+  const [theme] = useState<Theme>('dark');
 
   useEffect(() => {
     // Apply theme to document
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    root.classList.add('dark');
+    // Ensure light class is removed
+    root.classList.remove('light');
     
-    // Save to localStorage
-    localStorage.setItem('task-tracker-theme', theme);
-  }, [theme]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only auto-switch if no theme is saved in localStorage
-      const savedTheme = localStorage.getItem('task-tracker-theme');
-      if (!savedTheme) {
-        setThemeState(e.matches ? 'dark' : 'light');
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    // Save to localStorage just in case, though we ignore it now
+    localStorage.setItem('task-tracker-theme', 'dark');
   }, []);
 
   const toggleTheme = () => {
-    setThemeState(prev => prev === 'light' ? 'dark' : 'light');
+    // No-op: Theme is locked to dark
   };
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
+  const setTheme = () => {
+     // No-op
   };
 
   return (

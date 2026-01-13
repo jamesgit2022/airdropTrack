@@ -55,7 +55,7 @@ export const TaskList: React.FC<TaskListProps> = ({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center py-16 dark:text-gray-300"
+        className="text-center py-16 text-gray-300"
       >
         <motion.div 
           animate={{ 
@@ -63,14 +63,14 @@ export const TaskList: React.FC<TaskListProps> = ({
             rotate: [0, 5, -5, 0]
           }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl flex items-center justify-center shadow-inner"
+          className="w-20 h-20 mx-auto mb-6 bg-[#1A1B1E] border border-gray-800 rounded-2xl flex items-center justify-center shadow-inner"
         >
-          <TabIcon className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+          <TabIcon className="w-10 h-10 text-[#00E272]/50" />
         </motion.div>
-        <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">
+        <h3 className="text-xl font-bold text-white mb-2">
           No {tabInfo.label} tasks found
         </h3>
-        <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+        <p className="text-gray-400 max-w-sm mx-auto">
           Add your first {tabInfo.label} task to get started and boost your productivity!
         </p>
       </motion.div>

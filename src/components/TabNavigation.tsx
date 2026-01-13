@@ -1,6 +1,8 @@
 import React from 'react';
-import { Calendar, StickyNote, Users, TestTube } from 'lucide-react';
+import { Calendar, StickyNote, Users, TestTube, Rocket } from 'lucide-react';
 import { ActiveTab } from '../types/Task';
+import { clsx } from 'clsx';
+import { Link } from 'react-router-dom';
 
 interface TabNavigationProps {
   activeTab: ActiveTab;
@@ -13,70 +15,61 @@ interface TabNavigationProps {
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({
   activeTab,
-  onTabChange,
+  onTabChange, // kept for interface compat but unused
   dailyCount,
   noteCount,
   waitlistCount,
   testnetCount
 }) => {
+  const tabs = [
+    { id: 'airdrop', label: 'Airdrop 2026', icon: Rocket, count: 0, fullWidth: true },
+    { id: 'daily', label: 'Daily', icon: Calendar, count: dailyCount },
+    { id: 'note', label: 'Task Only', icon: StickyNote, count: noteCount },
+    { id: 'waitlist', label: 'Waitlist', icon: Users, count: waitlistCount },
+    { id: 'testnet', label: 'Testnet', icon: TestTube, count: testnetCount },
+  ];
+
+  const getPath = (id: string) => {
+    switch (id) {
+      case 'airdrop': return '/airdrop2026';
+      case 'daily': return '/dailytasks';
+      case 'note': return '/notes';
+      case 'waitlist': return '/waitlist';
+      case 'testnet': return '/testnet';
+      default: return '/dailytasks';
+    }
+  };
+
   return (
-    <div className="grid grid-cols-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-6 gap-1 md:hidden">
-      <button
-        onClick={() => onTabChange('daily')}
-        className={`flex items-center justify-center gap-2 py-3 px-2 rounded-md font-medium transition-all text-sm ${
-          activeTab === 'daily'
-            ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-        }`}
-      >
-        <Calendar className="w-4 h-4" />
-        <span className="inline">Daily</span>
-        <span className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs px-2 py-1 rounded-full">
-          {dailyCount}
-        </span>
-      </button>
-      <button
-        onClick={() => onTabChange('note')}
-        className={`flex items-center justify-center gap-2 py-3 px-2 rounded-md font-medium transition-all text-sm ${
-          activeTab === 'note'
-            ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-        }`}
-      >
-        <StickyNote className="w-4 h-4" />
-        <span className="inline">Task Only</span>
-        <span className="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 text-xs px-2 py-1 rounded-full">
-          {noteCount}
-        </span>
-      </button>
-      <button
-        onClick={() => onTabChange('waitlist')}
-        className={`flex items-center justify-center gap-2 py-3 px-2 rounded-md font-medium transition-all text-sm ${
-          activeTab === 'waitlist'
-            ? 'bg-white dark:bg-gray-600 text-orange-600 dark:text-orange-400 shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-        }`}
-      >
-        <Users className="w-4 h-4" />
-        <span className="inline">Waitlist</span>
-        <span className="bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 text-xs px-2 py-1 rounded-full">
-          {waitlistCount}
-        </span>
-      </button>
-      <button
-        onClick={() => onTabChange('testnet')}
-        className={`flex items-center justify-center gap-2 py-3 px-2 rounded-md font-medium transition-all text-sm ${
-          activeTab === 'testnet'
-            ? 'bg-white dark:bg-gray-600 text-green-600 dark:text-green-400 shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-        }`}
-      >
-        <TestTube className="w-4 h-4" />
-        <span className="inline">Testnet</span>
-        <span className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-xs px-2 py-1 rounded-full">
-          {testnetCount}
-        </span>
-      </button>
+    <div className="grid grid-cols-2 bg-[#1A1B1E] rounded-lg p-1 mb-6 gap-1 md:hidden border border-gray-800">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <Link
+            key={tab.id}
+            to={getPath(tab.id)}
+            className={clsx(
+              "flex items-center justify-center gap-2 py-3 px-2 rounded-md font-medium transition-all text-sm",
+              tab.fullWidth && "col-span-2",
+              isActive
+                ? "bg-[#00E272]/10 text-[#00E272] shadow-sm border border-[#00E272]/20"
+                : "text-gray-400 hover:bg-gray-800 hover:text-white"
+            )}
+          >
+            <Icon className="w-4 h-4" />
+            <span className="inline">{tab.label}</span>
+            {tab.count > 0 && (
+              <span className={clsx(
+                "text-xs px-2 py-1 rounded-full",
+                isActive ? "bg-[#00E272]/20 text-[#00E272]" : "bg-gray-800 text-gray-500"
+              )}>
+                {tab.count}
+              </span>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 };

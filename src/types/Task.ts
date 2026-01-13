@@ -27,7 +27,7 @@ export enum TaskStatus {
   ENDED = 'ended'
 }
 
-export type ActiveTab = 'daily' | 'note' | 'waitlist' | 'testnet';
+export type ActiveTab = 'daily' | 'note' | 'waitlist' | 'testnet' | 'airdrop';
 
 export type SortOption = 'none' | 'title-asc' | 'title-desc' | 'completed' | 'uncompleted';
 
