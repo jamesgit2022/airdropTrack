@@ -99,7 +99,7 @@ export const AirdropList: React.FC = () => {
                 <AirdropCard
                   key={airdrop.id}
                   airdrop={airdrop}
-                  onClick={() => navigate(`/airdrop2026/${createSlug(airdrop.name)}`)}
+                  to={`/airdrop2026/${createSlug(airdrop.name)}`}
                 />
               ))}
             </div>

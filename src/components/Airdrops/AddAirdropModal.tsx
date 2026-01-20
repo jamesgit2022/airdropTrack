@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bold, Italic, Link as LinkIcon } from 'lucide-react';
 import { Airdrop, AirdropStatus, AirdropDifficulty } from '../../types/Airdrop';
+import { normalizeText } from '../../utils/stringUtils';
 
 interface AddAirdropModalProps {
   isOpen: boolean;
@@ -46,7 +47,14 @@ export const AddAirdropModal: React.FC<AddAirdropModalProps> = ({ isOpen, onClos
 
     setLoading(true);
     try {
-      await onAdd(formData as Omit<Airdrop, 'id' | 'created_at'>);
+      // Normalize name and ticker before submitting
+      const normalizedData = {
+        ...formData,
+        name: normalizeText(formData.name),
+        ticker: formData.ticker ? normalizeText(formData.ticker) : formData.ticker
+      };
+
+      await onAdd(normalizedData as Omit<Airdrop, 'id' | 'created_at'>);
       onClose();
       setFormData({ status: 'upcoming', difficulty: 'Medium', participants_count: 0 });
     } catch (error) {

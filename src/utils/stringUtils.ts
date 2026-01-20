@@ -1,5 +1,9 @@
+export const normalizeText = (text: string): string => {
+  return text.normalize('NFKC');
+};
+
 export const createSlug = (text: string): string => {
-  return text
+  return normalizeText(text)
     .toString()
     .toLowerCase()
     .trim()

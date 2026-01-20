@@ -9,8 +9,7 @@ export const AirdropDetailsWrapper: React.FC = () => {
   const navigate = useNavigate();
   const { airdrops, loading } = useAirdrops();
   
-  // Find airdrop by matching the slug from URL with slugified name
-  const airdrop = airdrops.find(a => createSlug(a.name) === id);
+  const airdrop = airdrops.find(a => a.id === id) || airdrops.find(a => createSlug(a.name) === id);
 
   if (loading) {
      return (
