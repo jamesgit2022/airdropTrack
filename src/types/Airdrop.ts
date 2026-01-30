@@ -19,5 +19,7 @@ export interface Airdrop {
   discord?: string;
   telegram?: string;
   funding?: string;
+  has_daily_task?: boolean;
+  is_waitlist?: boolean;
   created_at: string;
 }

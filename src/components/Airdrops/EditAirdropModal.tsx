@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Bold, Italic, Link as LinkIcon } from 'lucide-react';
+import { X, Bold, Italic, Link as LinkIcon, Code } from 'lucide-react';
 import { Airdrop, AirdropStatus, AirdropDifficulty } from '../../types/Airdrop';
+import { normalizeText } from '../../utils/stringUtils';
 
 interface EditAirdropModalProps {
   isOpen: boolean;
@@ -33,7 +34,9 @@ export const EditAirdropModal: React.FC<EditAirdropModalProps> = ({ isOpen, onCl
         twitter: airdrop.twitter,
         discord: airdrop.discord,
         telegram: airdrop.telegram,
-        funding: airdrop.funding
+        funding: airdrop.funding,
+        has_daily_task: airdrop.has_daily_task,
+        is_waitlist: airdrop.is_waitlist
       });
     }
   }, [airdrop]);
@@ -56,8 +59,13 @@ export const EditAirdropModal: React.FC<EditAirdropModalProps> = ({ isOpen, onCl
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +74,14 @@ export const EditAirdropModal: React.FC<EditAirdropModalProps> = ({ isOpen, onCl
 
     setLoading(true);
     try {
-      await onUpdate(airdrop.id, formData);
+      // Normalize name and ticker before submitting
+      const normalizedData = {
+        ...formData,
+        name: normalizeText(formData.name),
+        ticker: formData.ticker ? normalizeText(formData.ticker) : formData.ticker
+      };
+
+      await onUpdate(airdrop.id, normalizedData);
       onClose();
     } catch (error) {
       console.error(error);
@@ -126,6 +141,30 @@ export const EditAirdropModal: React.FC<EditAirdropModalProps> = ({ isOpen, onCl
                 placeholder="https://..."
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#00E272]"
               />
+            </div>
+
+            <div className="flex gap-6 py-2">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  name="has_daily_task"
+                  checked={formData.has_daily_task || false}
+                  onChange={handleChange}
+                  className="w-5 h-5 rounded border-gray-700 bg-gray-900 text-[#00E272] focus:ring-[#00E272] focus:ring-offset-gray-900"
+                />
+                <span className="text-gray-300 group-hover:text-white">Daily Task</span>
+              </label>
+              
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  name="is_waitlist"
+                  checked={formData.is_waitlist || false}
+                  onChange={handleChange}
+                  className="w-5 h-5 rounded border-gray-700 bg-gray-900 text-[#00E272] focus:ring-[#00E272] focus:ring-offset-gray-900"
+                />
+                <span className="text-gray-300 group-hover:text-white">Waitlist</span>
+              </label>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -188,6 +227,10 @@ export const EditAirdropModal: React.FC<EditAirdropModalProps> = ({ isOpen, onCl
                 </button>
                 <button type="button" onClick={() => insertFormat('[', '](url)')} className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white" title="Link">
                   <LinkIcon className="w-4 h-4" />
+                </button>
+                <div className="w-px h-4 bg-gray-700 mx-1" />
+                <button type="button" onClick={() => insertFormat('`', '`')} className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white" title="Code/Copy">
+                  <Code className="w-4 h-4" />
                 </button>
               </div>
               <textarea

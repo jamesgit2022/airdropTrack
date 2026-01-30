@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Bold, Italic, Link as LinkIcon } from 'lucide-react';
+import { X, Bold, Italic, Link as LinkIcon, Code } from 'lucide-react';
 import { Airdrop, AirdropStatus, AirdropDifficulty } from '../../types/Airdrop';
 import { normalizeText } from '../../utils/stringUtils';
 
@@ -15,7 +15,9 @@ export const AddAirdropModal: React.FC<AddAirdropModalProps> = ({ isOpen, onClos
   const [formData, setFormData] = useState<Partial<Airdrop>>({
     status: 'upcoming',
     difficulty: 'Medium',
-    participants_count: 0
+    participants_count: 0,
+    has_daily_task: false,
+    is_waitlist: false
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,8 +39,13 @@ export const AddAirdropModal: React.FC<AddAirdropModalProps> = ({ isOpen, onClos
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +63,13 @@ export const AddAirdropModal: React.FC<AddAirdropModalProps> = ({ isOpen, onClos
 
       await onAdd(normalizedData as Omit<Airdrop, 'id' | 'created_at'>);
       onClose();
-      setFormData({ status: 'upcoming', difficulty: 'Medium', participants_count: 0 });
+      setFormData({ 
+        status: 'upcoming', 
+        difficulty: 'Medium', 
+        participants_count: 0,
+        has_daily_task: false,
+        is_waitlist: false
+      });
     } catch (error) {
       console.error(error);
       alert('Failed to add airdrop');
@@ -115,6 +128,30 @@ export const AddAirdropModal: React.FC<AddAirdropModalProps> = ({ isOpen, onClos
                 placeholder="https://..."
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#00E272]"
               />
+            </div>
+
+            <div className="flex gap-6 py-2">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  name="has_daily_task"
+                  checked={formData.has_daily_task || false}
+                  onChange={handleChange}
+                  className="w-5 h-5 rounded border-gray-700 bg-gray-900 text-[#00E272] focus:ring-[#00E272] focus:ring-offset-gray-900"
+                />
+                <span className="text-gray-300 group-hover:text-white">Daily Task</span>
+              </label>
+              
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  name="is_waitlist"
+                  checked={formData.is_waitlist || false}
+                  onChange={handleChange}
+                  className="w-5 h-5 rounded border-gray-700 bg-gray-900 text-[#00E272] focus:ring-[#00E272] focus:ring-offset-gray-900"
+                />
+                <span className="text-gray-300 group-hover:text-white">Waitlist</span>
+              </label>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -177,6 +214,10 @@ export const AddAirdropModal: React.FC<AddAirdropModalProps> = ({ isOpen, onClos
                 </button>
                 <button type="button" onClick={() => insertFormat('[', '](url)')} className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white" title="Link">
                   <LinkIcon className="w-4 h-4" />
+                </button>
+                <div className="w-px h-4 bg-gray-700 mx-1" />
+                <button type="button" onClick={() => insertFormat('`', '`')} className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white" title="Code/Copy">
+                  <Code className="w-4 h-4" />
                 </button>
               </div>
               <textarea

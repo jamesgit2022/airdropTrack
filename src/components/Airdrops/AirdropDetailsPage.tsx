@@ -7,6 +7,7 @@ import { useAirdrops } from '../../hooks/useAirdrops';
 import { EditAirdropModal } from './EditAirdropModal';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { useNavigate } from 'react-router-dom';
+import { CopyButton } from '../CopyButton';
 
 interface AirdropDetailsPageProps {
   airdrop: Airdrop;
@@ -30,8 +31,8 @@ export const AirdropDetailsPage: React.FC<AirdropDetailsPageProps> = ({ airdrop,
   };
 
   const renderMarkdown = (text: string) => {
-    // Split by patterns: [text](url), **bold**, *italic*, or raw URLs
-    const parts = text.split(/(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*|https?:\/\/[^\s]+)/g);
+    // Split by patterns: [text](url), **bold**, *italic*, `code`, or raw URLs
+    const parts = text.split(/(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|https?:\/\/[^\s]+)/g);
 
     return parts.map((part, index) => {
       // Link [text](url)
@@ -60,6 +61,18 @@ export const AirdropDetailsPage: React.FC<AirdropDetailsPageProps> = ({ airdrop,
       const italicMatch = part.match(/^\*(.+)\*$/);
       if (italicMatch) {
         return <em key={index} className="italic text-gray-200">{italicMatch[1]}</em>;
+      }
+
+      // Code/Copyable `text`
+      const codeMatch = part.match(/^`([^`]+)`$/);
+      if (codeMatch) {
+        const content = codeMatch[1];
+        return (
+          <span key={index} className="inline-flex items-center gap-2 bg-gray-900/80 border border-gray-700 rounded-lg px-2 py-0.5 mx-1 align-middle">
+            <code className="text-[#00E272] font-mono text-sm">{content}</code>
+            <CopyButton text={content} className="hover:bg-gray-700" />
+          </span>
+        );
       }
 
       // Raw URL
